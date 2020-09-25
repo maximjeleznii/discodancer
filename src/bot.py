@@ -1,0 +1,11 @@
+import discord
+from discord.ext import commands
+
+bot = commands.Bot(command_prefix='%%')
+
+@bot.event
+async def on_ready():
+    print(f'{bot.user} has logged in.')
+    bot.load_extension('cogs.music')
+
+bot.run('NzU1NDk5Nzk2NjYzMzY5ODI0.X2EMBA.LHdTZdwO7pdh1RXN9ARkfRSjMWc')
