@@ -60,6 +60,7 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=['p'])
     async def play(self, ctx, *, query: str):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
         query = query.strip('<>')
 
         # Querying for tracks
@@ -67,24 +68,24 @@ class MusicCog(commands.Cog):
             query = f'ytsearch:{query}'
         results = await player.node.get_tracks(query)
         if not results or not results['tracks']:
-            return await ctx.send('Nothing found!')
+            embed.description = 'Nothing found!'
+            return await ctx.send(embed = embed)
 
-        embed = discord.Embed(color=discord.Color.blurple())
         if results['loadType'] == 'PLAYLIST LOADED':
             tracks = results['tracks']
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
-            embed.title = 'Playlist Enqueued!'
+            embed.title = 'Playlist Enqueued:'
             embed.description = f'{results["playlistInfo"]["name"]} - {len(tracks)} tracks'
         else:
             if not url_rx.match(query):
                 tracks = results['tracks'][:5]
-                embed.title = 'Dug this up'
-                embed.description = 'Use %%pick [int] in the next 30s:\n'
+                embed.title = 'Result:'
+                embed.description = 'Use %%pick [int] in the next 30s:\n\n'
                 i = 0
                 for track in tracks:
                     i = i + 1
-                    embed.description = embed.description + f'{i}) [{track["info"]["title"]}]({track["info"]["uri"]})\n'
+                    embed.description = embed.description + f'{i}) [{track["info"]["title"]}]({track["info"]["uri"]}) - {track["info"]["author"]}\n'
                 await ctx.send(embed = embed)
 
                 def check(m):
@@ -103,7 +104,7 @@ class MusicCog(commands.Cog):
             else:
                 track = results['tracks'][0]
             embed.title = 'Track Enqueud'
-            embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
+            embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]}) - {track["info"]["author"]}'
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
 
@@ -119,42 +120,84 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=['leave', 'dc',])
     async def disconnect(self, ctx):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
         if not player.is_connected:
-            return await ctx.send('Not Connected.')
+            embed.title = 'Not Connected'
+            return await ctx.send(embed = embed)
         if not ctx.author.voice or (player.is_connected and ctx.author.voice.channel.id != int(player.channel_id)):
-            return await ctx.send('You\'re not in my voice channel.')
+            embed.title = 'You\'re not in my voice channel'
+            return await ctx.send(embed = embed)
         player.queue.clear()
         await player.stop()
         await self.connect_to(ctx.guild.id, None)
-        await ctx.send('Disco-nnected.')
+        embed.title = 'Disco-nnected'
+        return await ctx.send(embed = embed)
 
     @commands.command(aliases=['next'])
     async def skip(self, ctx, *args):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
         if len(args)<1:
             await player.skip()
-            await ctx.send('Skipped 1 song.')
+            embed.title = 'Skipped 1 song'
+            return await ctx.send(embed = embed)
         else:
-            i = int(args[0])
-            j = i
-            while(i>0 and player.is_playing):
-                i = i - 1
-                await player.skip()
-            await ctx.send(f'Skipped {j-i} songs.')
+            if args[0].isdigit():
+                i = int(args[0])
+                j = i
+                while(i>0 and player.is_playing):
+                    i = i - 1
+                    await player.skip()
+                embed.title = f'Skipped {j-i} songs'
+                return await ctx.send(embed = embed)
 
     @commands.command(aliases=['unpause',])
     async def pause(self, ctx, *args):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
         await player.set_pause(not player.paused)
+        if player.paused:
+            embed.title = 'Paused'
+        else:
+            embed.title = 'Unpaused'
+        embed.description = f'[{player.current.title}]({player.current.uri}) - {player.current.author}'
+        return await ctx.send(embed = embed)
 
     @commands.command(aliases=['repeat',])
     async def loop(self, ctx, *args):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        player.repeeat = not player.repeat
+        embed = discord.Embed(color=discord.Color.blurple())
+        player.repeat = not player.repeat
         if player.repeat:
-            await ctx.send(f'Looping')
+            embed.title = f'Looping queue.'
         else:
-            await ctx.send(f'Stopped Looping')
+            embed.title = f'Stopped looping queue.'
+        return await ctx.send(embed = embed)
+
+    @commands.command(aliases=['vol',])
+    async def volume(self, ctx, *args):
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
+        if len(args)<1:
+            embed.title = f'Volume is at {player.volume}%'
+            return await ctx.send(embed = embed)
+        else:
+            if args[0].isdigit():
+                new_volume = int(args[0])
+                if new_volume > 200:
+                    new_volume = 200
+                await player.set_volume(new_volume)
+                embed.title = f'Volume is now at {player.volume}%'
+                return await ctx.send(embed = embed)
+
+    @commands.command(aliases=['cur', 'curr',])
+    async def current(self, ctx, *args):
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
+        embed.title = f'Current Track'
+        embed.description = f'[{player.current.title}]({player.current.uri}) - {player.current.author}'
+        return await ctx.send(embed = embed)
+
 
 def setup(bot):
     bot.add_cog(MusicCog(bot))
