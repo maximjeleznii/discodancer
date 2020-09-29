@@ -14,7 +14,7 @@ class CoinflipCog(commands.Cog):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(error.original)
 
-    @commands.command(aliases=['flip', 'coin'])
+    @commands.command(aliases=['flip', 'coin',])
     async def coinflip(self, ctx, *args):
         embed = discord.Embed(color=discord.Color.blurple())
         random.seed(datetime.datetime.now())
