@@ -11,4 +11,4 @@ async def on_ready():
     bot.load_extension('cogs.eightball')
     bot.load_extension('cogs.msgdelete')
 
-bot.run('NzU5NDk3MDU1MDUxNDQ4MzUx.X2-WwA.PArw-2Fep8tkgWbB6ZgDKP3XN6U')
+bot.run('h')
