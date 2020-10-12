@@ -31,12 +31,9 @@ class EightBallCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(error.original)
-
     @commands.command(aliases=['8ball',])
     async def eightball(self, ctx, *args):
+        """ Sends a random message from the answeres list. """
         embed = discord.Embed(color=discord.Color.blurple())
         if len(args)<1:
             embed.title = 'Ask a yes or no question!'
@@ -47,4 +44,5 @@ class EightBallCog(commands.Cog):
         await ctx.send(embed=embed)
 
 def setup(bot):
+    """ Used to add this cog to the bot. """
     bot.add_cog(EightBallCog(bot))

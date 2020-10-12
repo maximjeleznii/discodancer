@@ -9,5 +9,6 @@ async def on_ready():
     bot.load_extension('cogs.music')
     bot.load_extension('cogs.coinflip')
     bot.load_extension('cogs.eightball')
+    bot.load_extension('cogs.msgdelete')
 
-bot.run('h')
+bot.run('NzU5NDk3MDU1MDUxNDQ4MzUx.X2-WwA.PArw-2Fep8tkgWbB6ZgDKP3XN6U')

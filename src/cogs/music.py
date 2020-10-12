@@ -7,6 +7,7 @@ import discord
 url_rx = re.compile(r'https?://(?:www\.)?.+')
 
 class MusicCog(commands.Cog):
+    """ Cog for commands related to the genral use of the lavalink player. """
     def __init__(self, bot):
         self.bot = bot
         if not hasattr(bot, 'lavalink'):
@@ -16,9 +17,13 @@ class MusicCog(commands.Cog):
         lavalink.add_event_hook(self.track_hook)
 
     def cog_unload(self):
+        """
+        Unload Handler. Removes event hooks.
+        """
         self.bot.lavalink._event_hooks.clear()
 
     async def cog_before_invoke(self, ctx):
+        """ Checks if bot is in guild and ensures voice before invoing commands. """
         guild_check = ctx.guild is not None
         if guild_check:
             await self.ensure_voice(ctx)
@@ -29,9 +34,10 @@ class MusicCog(commands.Cog):
             await ctx.send(error.original)
 
     async def ensure_voice(self, ctx):
+        """ Checks if author and player are in the same voice channel. """
         player = self.bot.lavalink.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
 
-        # Commands that dont require the bot to be in a voice channel need to be listed here
+        #Commands that dont require the bot to be in a voice channel need to be listed here.
         should_connect = ctx.command.name in ('play', 'pick',)
 
         if not ctx.author.voice or not ctx.author.voice.channel:
@@ -48,17 +54,19 @@ class MusicCog(commands.Cog):
                 raise commands.CommandInvokeError('Already in a different voice channel.')
 
     async def track_hook(self, event):
-        # When track_hook recieves a QueueEndEvent, disconnects from channel.
+        """ Disconnects from channel when queue ends. """
         if isinstance(event, lavalink.events.QueueEndEvent):
             guild_id = int(event.player.guild_id)
             await self.connect_to(guild_id, None)
 
     async def connect_to(self, guild_id: int, channel_id: str):
+        """ Helper ro connect to passsed voice channel"""
         ws = self.bot._connection._get_websocket(guild_id)
         await ws.voice_state(str(guild_id), channel_id)
 
     @commands.command(aliases=['p'])
     async def play(self, ctx, *, query: str):
+        """ Handles the querying and adding of tracks to the queue. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         query = query.strip('<>')
@@ -88,15 +96,15 @@ class MusicCog(commands.Cog):
                     embed.description = embed.description + f'{i}) [{track["info"]["title"]}]({track["info"]["uri"]}) - {track["info"]["author"]}\n'
                 await ctx.send(embed = embed)
 
-                def check(m):
+                def pick(m):
                     mList = m.content.strip('<>').split()
                     return m.author.id == ctx.author.id and ('%%' in mList[0])
 
                 try:
-                    response = await self.bot.wait_for('message', timeout = 30, check=check)
+                    response = await self.bot.wait_for('message', timeout = 30, check=pick)
                     track = tracks[int(response.content.split(' ')[1])-1]
                 except TimeoutError:
-                    print(f'{ctx.author} didn\'t choose in time.')
+                    raise commands.CommandInvokeError(f'{ctx.author} didn\'t choose in time.')
                     return
                 except Exception as e:
                     print(e)
@@ -115,10 +123,12 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     async def pick(self, ctx):
+        """ Solution to no such command errorr when picking a track in the play command function. """
         return
 
     @commands.command(aliases=['leave', 'dc',])
     async def disconnect(self, ctx):
+        """ Disconnects from the connected voice channel. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         if not player.is_connected:
@@ -135,6 +145,7 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=['next'])
     async def skip(self, ctx, *args):
+        """ Skips to the next track in the queue. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         if len(args)<1:
@@ -151,8 +162,9 @@ class MusicCog(commands.Cog):
                 embed.title = f'Skipped {j-i} songs'
                 return await ctx.send(embed = embed)
 
-    @commands.command(aliases=['unpause',])
+    @commands.command(aliases=['unpause', 'stop', 'start'])
     async def pause(self, ctx, *args):
+        """ Pauses the player. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         await player.set_pause(not player.paused)
@@ -163,19 +175,9 @@ class MusicCog(commands.Cog):
         embed.description = f'[{player.current.title}]({player.current.uri}) - {player.current.author}'
         return await ctx.send(embed = embed)
 
-    @commands.command(aliases=['repeat',])
-    async def loop(self, ctx, *args):
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        embed = discord.Embed(color=discord.Color.blurple())
-        player.repeat = not player.repeat
-        if player.repeat:
-            embed.title = f'Looping queue.'
-        else:
-            embed.title = f'Stopped looping queue.'
-        return await ctx.send(embed = embed)
-
     @commands.command(aliases=['vol',])
     async def volume(self, ctx, *args):
+        """ Shows and adjusts player volume. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         if len(args)<1:
@@ -192,12 +194,37 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=['cur', 'curr',])
     async def current(self, ctx, *args):
+        """ Displays information about the current track. """
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         embed.title = f'Current Track'
         embed.description = f'[{player.current.title}]({player.current.uri}) - {player.current.author}'
         return await ctx.send(embed = embed)
 
+    @commands.command(aliases=['repeat',])
+    async def loop(self, ctx, *args):
+        """ Toggles queue looping. """
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
+        player.repeat = not player.repeat
+        if player.repeat:
+            embed.title = f'Looping queue.'
+        else:
+            embed.title = f'Stopped looping queue.'
+        return await ctx.send(embed = embed)
+
+    @commands.command(aliases=[])
+    async def shuffle(self, ctx, *args):
+        """ Toggles shuffling of the queue. """
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        embed = discord.Embed(color=discord.Color.blurple())
+        player.set_shuffle(not player.shuffle)
+        if player.shuffle:
+            embed.title = 'Shuffling'
+        else:
+            embed.title = 'Stopped Shuffling'
+        return await ctx.send(embed = embed)
 
 def setup(bot):
+    """ Used to add this cog to the bot. """
     bot.add_cog(MusicCog(bot))

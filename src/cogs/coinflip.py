@@ -10,12 +10,9 @@ class CoinflipCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(error.original)
-
     @commands.command(aliases=['flip', 'coin',])
     async def coinflip(self, ctx, *args):
+        """ Ramdomly chooses between heads and tails. """
         embed = discord.Embed(color=discord.Color.blurple())
         random.seed(datetime.datetime.now())
         coin = random.randint(0,1)
@@ -26,5 +23,6 @@ class CoinflipCog(commands.Cog):
         await ctx.send(embed=embed)
 
 def setup(bot):
+    """ Used to add this cog to the bot. """
     bot.add_cog(CoinflipCog(bot))
         
