@@ -27,21 +27,17 @@ class MsgDelete(commands.Cog):
                 delLim = int(args[0])+1
             elif 'me' in args[0]:
                 delTarget = ctx.author
-            """
             elif 'all' in args[0]:
                 delOnlyTarget = False
-            """
         elif len(args) == 2:
             if 'me' in args[0]:
                 delTarget = ctx.author
                 if args[1].isdigit():
                     delLim = int(args[1])+1
-            """
             elif 'all' in args[0]:
                 delOnlyTarget = False
                 if args[1].isdigit():
                     delLim = int(args[1])+1
-            """
 
         if delLim > maxDelLim:
             delLim = maxDelLim
