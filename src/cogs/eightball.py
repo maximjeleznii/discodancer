@@ -25,7 +25,8 @@ answers = ['It is certain.',
             'My reply is no.',
             'My sources say no.',
             'Outlook not so good.',
-            'Very doubtful.']
+            'Very doubtful.',
+            'Andre\'s brain weighs 0.42Kg.']
 
 class EightBallCog(commands.Cog):
     def __init__(self, bot):

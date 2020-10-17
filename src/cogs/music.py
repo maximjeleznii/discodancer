@@ -70,6 +70,8 @@ class MusicCog(commands.Cog):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed(color=discord.Color.blurple())
         query = query.strip('<>')
+        last_message = ctx.channel.last_message
+        edit_instead = False
 
         # Querying for tracks
         if not url_rx.match(query):
@@ -83,11 +85,16 @@ class MusicCog(commands.Cog):
             tracks = results['tracks']
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
+
+            #embed building
             embed.title = 'Playlist Enqueued:'
             embed.description = f'{results["playlistInfo"]["name"]} - {len(tracks)} tracks'
         else:
             if not url_rx.match(query):
+                edit_instead = True
                 tracks = results['tracks'][:5]
+
+                #embed building
                 embed.title = 'Result:'
                 embed.description = 'Use %%pick [int] in the next 30s:\n\n'
                 i = 0
@@ -95,11 +102,14 @@ class MusicCog(commands.Cog):
                     i = i + 1
                     embed.description = embed.description + f'{i}) [{track["info"]["title"]}]({track["info"]["uri"]}) - {track["info"]["author"]}\n'
                 await ctx.send(embed = embed)
+                last_message = ctx.channel.last_message
 
+                #check for picking track from query
                 def pick(m):
                     mList = m.content.strip('<>').split()
                     return m.author.id == ctx.author.id and ('%%' in mList[0])
 
+                #tries to wait for a response
                 try:
                     response = await self.bot.wait_for('message', timeout = 30, check=pick)
                     track = tracks[int(response.content.split(' ')[1])-1]
@@ -111,12 +121,20 @@ class MusicCog(commands.Cog):
                     return
             else:
                 track = results['tracks'][0]
+
+            #embed building
             embed.title = 'Track Enqueud'
             embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]}) - {track["info"]["author"]}'
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
 
-        await ctx.send(embed = embed)
+        #edit last message instead of sending if preferred
+        if edit_instead:
+            await last_message.edit(embed = embed)
+        else:
+            await ctx.send(embed = embed)
+
+        #connects player and starts if not already in channel and playing
         if not player.is_playing:
             await self.connect_to(ctx.guild.id, ctx.author.voice.channel.id)
             await player.play()

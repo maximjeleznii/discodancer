@@ -46,10 +46,10 @@ class MsgDelete(commands.Cog):
             return m.author == delTarget
 
         if delOnlyTarget:
-            deleted = await ctx.channel.purge(limit=delLim, check=is_me)
+            deleted = await ctx.channel.purge(limit=delLim, check=is_me, bulk=True)
             return await ctx.send(f'Deleted {len(deleted)} message(s) from {delTarget.display_name}')
         else:
-            deleted = await ctx.channel.purge(limit=delLim)
+            deleted = await ctx.channel.purge(limit=delLim, bulk=True)
             return await ctx.send(f'Deleted {len(deleted)} message(s)')
 
 
