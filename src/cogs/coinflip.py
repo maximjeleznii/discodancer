@@ -20,7 +20,7 @@ class CoinflipCog(commands.Cog):
             embed.title = 'Heads'
         else:
             embed.title = 'Tails'
-        await ctx.send(embed=embed)
+        return await ctx.send(embed=embed)
 
 def setup(bot):
     """ Used to add this cog to the bot. """

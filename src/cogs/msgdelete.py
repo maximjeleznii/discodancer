@@ -15,14 +15,13 @@ class MsgDelete(commands.Cog):
         if not ctx.author.permissions_in(ctx.channel).manage_messages:
             return await ctx.send('You are unable to use this command.')
 
+        embed = discord.Embed(color=discord.Color.blurple())
         delOnlyTarget = True
         maxDelLim = 20
         delLim = 10
         delTarget = self.bot.user
 
-        if len(args)<1:
-            """Does default clear"""
-        elif len(args) == 1:
+        if len(args) == 1:
             if args[0].isdigit():
                 delLim = int(args[0])+1
             elif 'me' in args[0]:
@@ -38,6 +37,8 @@ class MsgDelete(commands.Cog):
                 delOnlyTarget = False
                 if args[1].isdigit():
                     delLim = int(args[1])+1
+        else:
+            return
 
         if delLim > maxDelLim:
             delLim = maxDelLim
@@ -47,10 +48,11 @@ class MsgDelete(commands.Cog):
 
         if delOnlyTarget:
             deleted = await ctx.channel.purge(limit=delLim, check=is_me, bulk=True)
-            return await ctx.send(f'Deleted {len(deleted)} message(s) from {delTarget.display_name}')
+            embed.description = f'Deleted {len(deleted)} message(s) from {delTarget.display_name}'
         else:
             deleted = await ctx.channel.purge(limit=delLim, bulk=True)
-            return await ctx.send(f'Deleted {len(deleted)} message(s)')
+            embed.description = f'Deleted {len(deleted)} message(s)'
+        return await ctx.send(embed= embed)
 
 
 def setup(bot):
