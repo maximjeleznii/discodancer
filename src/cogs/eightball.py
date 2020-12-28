@@ -1,7 +1,6 @@
 import re
 
 from discord.ext import commands
-import lavalink
 import discord
 import random
 import datetime
@@ -25,8 +24,7 @@ answers = ['It is certain.',
             'My reply is no.',
             'My sources say no.',
             'Outlook not so good.',
-            'Very doubtful.',
-            'Andre\'s brain weighs 0.42Kg.']
+            'Very doubtful.']
 
 class EightBallCog(commands.Cog):
     def __init__(self, bot):

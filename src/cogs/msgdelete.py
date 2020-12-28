@@ -21,7 +21,9 @@ class MsgDelete(commands.Cog):
         delLim = 10
         delTarget = self.bot.user
 
-        if len(args) == 1:
+        if len(args) == 0:
+            #default
+        elif len(args) == 1:
             if args[0].isdigit():
                 delLim = int(args[0])+1
             elif 'me' in args[0]:

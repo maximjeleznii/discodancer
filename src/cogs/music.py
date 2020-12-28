@@ -81,7 +81,7 @@ class MusicCog(commands.Cog):
             embed.description = 'Nothing found!'
             return await ctx.send(embed = embed)
 
-        if results['loadType'] == 'PLAYLIST LOADED':
+        if results['loadType'] == 'PLAYLIST_LOADED':
             tracks = results['tracks']
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
