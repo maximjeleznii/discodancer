@@ -22,6 +22,7 @@ class MsgDelete(commands.Cog):
         delTarget = self.bot.user
 
         if len(args) == 0:
+            x = 'dab'
             #default
         elif len(args) == 1:
             if args[0].isdigit():
