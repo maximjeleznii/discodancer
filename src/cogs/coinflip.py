@@ -1,7 +1,6 @@
 import re
 
 from discord.ext import commands
-import lavalink
 import discord
 import random
 import datetime
