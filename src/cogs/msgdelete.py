@@ -1,5 +1,3 @@
-import re
-
 from discord.ext import commands
 import discord
 
@@ -22,7 +20,7 @@ class MsgDelete(commands.Cog):
         delTarget = self.bot.user
 
         if len(args) == 0:
-            x = 'dab'
+            return
             #default
         elif len(args) == 1:
             if args[0].isdigit():

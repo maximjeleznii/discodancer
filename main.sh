@@ -1,4 +1,4 @@
 set -m
-java -jar Lavalink.jar &
 python src/bot.py &
+java -jar Lavalink.jar &
 fg
