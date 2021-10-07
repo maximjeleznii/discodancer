@@ -1,7 +1,5 @@
 from discord.ext import commands
 import discord
-import asyncio
-from replit import db
 
 class NoRedditCog(commands.Cog):
     def __init__(self, bot):
@@ -9,33 +7,25 @@ class NoRedditCog(commands.Cog):
 
     @commands.command(aliases=['noreddit'])
     async def subNoReddit(self, ctx, *args):
-        embed = discord.Embed(color=discord.Color.blurple())
-        dbKey = 'noReddit_'+str(ctx.author.id)
-        if dbKey in db.keys():
-            if db[dbKey].lower()=='no':
-                db[dbKey] = 'yes'
-                embed.title = 'Subscribed'
-            else:
-                embed.title = 'Already Subscribed'
+        response = ''
+        role = discord.utils.get(ctx.guild.roles, name='No Reddit')
+        if role in ctx.author.roles:
+            response = 'Already Subscribed'
         else:
-            db[dbKey] = 'yes'
-            embed.title = 'Subscribed'
-        await ctx.send(embed=embed)
+            await ctx.author.add_roles(role)
+            response = 'Subscribed'
+        await ctx.reply(response)
 
     @commands.command(aliases=['yesreddit'])
     async def unsubNoReddit(self, ctx, *args):
-        embed = discord.Embed(color=discord.Color.blurple())
-        dbKey = 'noReddit_'+str(ctx.author.id)
-        if dbKey in db.keys():
-            if db[dbKey].lower()=='yes':
-                db[dbKey] = 'no'
-                embed.title = 'Unsubscribed'
-            else:
-                embed.title = 'Already Unsubscribed'
+        response = ''
+        role = discord.utils.get(ctx.guild.roles, name='No Reddit')
+        if role in ctx.author.roles:
+            await ctx.author.remove_roles(role)
+            response = ' Unsubscribed'
         else:
-            db[dbKey] = 'no'
-            embed.title = 'Unsubscribed'
-        await ctx.send(embed=embed)
+            response = 'Already Unsubscribed'
+        await ctx.reply(response)
         
 def setup(bot):
     """ Used to add this cog to the bot. """

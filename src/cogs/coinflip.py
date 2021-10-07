@@ -1,5 +1,4 @@
 from discord.ext import commands
-import discord
 import random
 import datetime
 
@@ -10,14 +9,14 @@ class CoinflipCog(commands.Cog):
     @commands.command(aliases=['flip', 'coin',])
     async def coinflip(self, ctx, *args):
         """ Ramdomly chooses between heads and tails. """
-        embed = discord.Embed(color=discord.Color.blurple())
+        response = ''
         random.seed(datetime.datetime.now())
         coin = random.randint(0,1)
         if coin == 0:
-            embed.title = 'Heads'
+            response = 'Heads'
         else:
-            embed.title = 'Tails'
-        return await ctx.send(embed=embed)
+            response = 'Tails'
+        return await ctx.reply(response)
 
 def setup(bot):
     """ Used to add this cog to the bot. """

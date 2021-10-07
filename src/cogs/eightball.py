@@ -1,5 +1,4 @@
 from discord.ext import commands
-import discord
 import random
 import datetime
 
@@ -31,14 +30,14 @@ class EightBallCog(commands.Cog):
     @commands.command(aliases=['8ball',])
     async def eightball(self, ctx, *args):
         """ Sends a random message from the answeres list. """
-        embed = discord.Embed(color=discord.Color.blurple())
+        response = ''
         if len(args)<1:
-            embed.title = 'Ask a yes or no question!'
+            response = 'Ask a yes or no question!'
         else:
             random.seed(datetime.datetime.now())
             answer = random.randint(0,len(answers))
-            embed.title = answers[answer]
-        await ctx.send(embed=embed)
+            response = answers[answer]
+        await ctx.reply(response)
 
 def setup(bot):
     """ Used to add this cog to the bot. """
